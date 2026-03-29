@@ -2,28 +2,42 @@ export interface DepositRequest {
   userAddress: string;
   assetAddress?: string;
   amount: string;
-  userSecret: string;
 }
 
 export interface BorrowRequest {
   userAddress: string;
   assetAddress?: string;
   amount: string;
-  userSecret: string;
 }
 
 export interface RepayRequest {
   userAddress: string;
   assetAddress?: string;
   amount: string;
-  userSecret: string;
 }
 
 export interface WithdrawRequest {
   userAddress: string;
   assetAddress?: string;
   amount: string;
-  userSecret: string;
+}
+
+export type LendingOperation = 'deposit' | 'borrow' | 'repay' | 'withdraw';
+
+export interface PrepareRequest {
+  userAddress: string;
+  assetAddress?: string;
+  amount: string;
+}
+
+export interface PrepareResponse {
+  unsignedXdr: string;
+  operation: LendingOperation;
+  expiresAt: string;
+}
+
+export interface SubmitRequest {
+  signedXdr: string;
 }
 
 export interface TransactionResponse {

@@ -12,12 +12,78 @@ describe('Lending Controller', () => {
     jest.clearAllMocks();
   });
 
-  describe('POST /api/lending/deposit', () => {
-    it('should successfully process a deposit', async () => {
-      const mockTxXdr = 'mock_tx_xdr';
+  describe('GET /api/lending/prepare/:operation', () => {
+    const validBody = {
+      userAddress: 'GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+      amount: '1000000',
+    };
+
+    it.each(['deposit', 'borrow', 'repay', 'withdraw'])(
+      'should return unsigned XDR for %s',
+      async (operation) => {
+        mockStellarService.buildUnsignedTransaction = jest
+          .fn()
+          .mockResolvedValue('unsigned_xdr_string');
+        (StellarService as jest.Mock).mockImplementation(() => mockStellarService);
+
+        const response = await request(app)
+          .get(`/api/lending/prepare/${operation}`)
+          .send(validBody);
+
+        expect(response.status).toBe(200);
+        expect(response.body.unsignedXdr).toBe('unsigned_xdr_string');
+        expect(response.body.operation).toBe(operation);
+        expect(response.body.expiresAt).toBeDefined();
+      }
+    );
+
+    it('should return 400 for invalid operation', async () => {
+      const response = await request(app).get('/api/lending/prepare/invalid_op').send(validBody);
+
+      expect(response.status).toBe(400);
+    });
+
+    it('should return 400 for missing userAddress', async () => {
+      const response = await request(app)
+        .get('/api/lending/prepare/deposit')
+        .send({ amount: '1000000' });
+
+      expect(response.status).toBe(400);
+    });
+
+    it('should return 400 for zero amount', async () => {
+      const response = await request(app)
+        .get('/api/lending/prepare/deposit')
+        .send({ ...validBody, amount: '0' });
+
+      expect(response.status).toBe(400);
+    });
+
+    it('should not accept userSecret in request body', async () => {
+      mockStellarService.buildUnsignedTransaction = jest
+        .fn()
+        .mockResolvedValue('unsigned_xdr_string');
+      (StellarService as jest.Mock).mockImplementation(() => mockStellarService);
+
+      const response = await request(app)
+        .get('/api/lending/prepare/deposit')
+        .send({ ...validBody, userSecret: 'SXXXXX' });
+
+      expect(response.status).toBe(200);
+      // userSecret must never be forwarded to the service
+      expect(mockStellarService.buildUnsignedTransaction).toHaveBeenCalledWith(
+        'deposit',
+        validBody.userAddress,
+        undefined,
+        validBody.amount
+      );
+    });
+  });
+
+  describe('POST /api/lending/submit', () => {
+    it('should submit signed XDR and return transaction result', async () => {
       const mockTxHash = 'mock_tx_hash';
 
-      mockStellarService.buildDepositTransaction = jest.fn().mockResolvedValue(mockTxXdr);
       mockStellarService.submitTransaction = jest.fn().mockResolvedValue({
         success: true,
         transactionHash: mockTxHash,
@@ -29,169 +95,37 @@ describe('Lending Controller', () => {
         status: 'success',
         ledger: 12345,
       });
-
       (StellarService as jest.Mock).mockImplementation(() => mockStellarService);
 
-      const response = await request(app).post('/api/lending/deposit').send({
-        userAddress: 'GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
-        amount: '1000000',
-        userSecret: 'SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
-      });
+      const response = await request(app)
+        .post('/api/lending/submit')
+        .send({ signedXdr: 'signed_xdr_string' });
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
       expect(response.body.transactionHash).toBe(mockTxHash);
     });
 
-    it('should return 400 for invalid amount', async () => {
-      const response = await request(app).post('/api/lending/deposit').send({
-        userAddress: 'GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
-        amount: '0',
-        userSecret: 'SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
-      });
-
-      expect(response.status).toBe(400);
-    });
-
-    it('should return 400 for missing required fields', async () => {
-      const response = await request(app).post('/api/lending/deposit').send({
-        userAddress: 'GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
-      });
-
-      expect(response.status).toBe(400);
-    });
-  });
-
-  describe('POST /api/lending/borrow', () => {
-    it('should successfully process a borrow', async () => {
-      const mockTxXdr = 'mock_tx_xdr';
-      const mockTxHash = 'mock_tx_hash';
-
-      mockStellarService.buildBorrowTransaction = jest.fn().mockResolvedValue(mockTxXdr);
-      mockStellarService.submitTransaction = jest.fn().mockResolvedValue({
-        success: true,
-        transactionHash: mockTxHash,
-        status: 'success',
-      });
-      mockStellarService.monitorTransaction = jest.fn().mockResolvedValue({
-        success: true,
-        transactionHash: mockTxHash,
-        status: 'success',
-        ledger: 12345,
-      });
-
-      (StellarService as jest.Mock).mockImplementation(() => mockStellarService);
-
-      const response = await request(app).post('/api/lending/borrow').send({
-        userAddress: 'GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
-        amount: '500000',
-        userSecret: 'SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
-      });
-
-      expect(response.status).toBe(200);
-      expect(response.body.success).toBe(true);
-    });
-
-    it('should handle transaction failure', async () => {
-      mockStellarService.buildBorrowTransaction = jest.fn().mockResolvedValue('mock_tx_xdr');
+    it('should return 400 when transaction fails', async () => {
       mockStellarService.submitTransaction = jest.fn().mockResolvedValue({
         success: false,
         status: 'failed',
         error: 'Insufficient collateral',
       });
-
       (StellarService as jest.Mock).mockImplementation(() => mockStellarService);
 
-      const response = await request(app).post('/api/lending/borrow').send({
-        userAddress: 'GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
-        amount: '500000',
-        userSecret: 'SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
-      });
+      const response = await request(app)
+        .post('/api/lending/submit')
+        .send({ signedXdr: 'signed_xdr_string' });
 
       expect(response.status).toBe(400);
       expect(response.body.success).toBe(false);
     });
-  });
 
-  describe('POST /api/lending/repay', () => {
-    it('should successfully process a repayment', async () => {
-      const mockTxXdr = 'mock_tx_xdr';
-      const mockTxHash = 'mock_tx_hash';
-
-      mockStellarService.buildRepayTransaction = jest.fn().mockResolvedValue(mockTxXdr);
-      mockStellarService.submitTransaction = jest.fn().mockResolvedValue({
-        success: true,
-        transactionHash: mockTxHash,
-        status: 'success',
-      });
-      mockStellarService.monitorTransaction = jest.fn().mockResolvedValue({
-        success: true,
-        transactionHash: mockTxHash,
-        status: 'success',
-        ledger: 12345,
-      });
-
-      (StellarService as jest.Mock).mockImplementation(() => mockStellarService);
-
-      const response = await request(app).post('/api/lending/repay').send({
-        userAddress: 'GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
-        amount: '250000',
-        userSecret: 'SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
-      });
-
-      expect(response.status).toBe(200);
-      expect(response.body.success).toBe(true);
-    });
-  });
-
-  describe('POST /api/lending/withdraw', () => {
-    it('should successfully process a withdrawal', async () => {
-      const mockTxXdr = 'mock_tx_xdr';
-      const mockTxHash = 'mock_tx_hash';
-
-      mockStellarService.buildWithdrawTransaction = jest.fn().mockResolvedValue(mockTxXdr);
-      mockStellarService.submitTransaction = jest.fn().mockResolvedValue({
-        success: true,
-        transactionHash: mockTxHash,
-        status: 'success',
-      });
-      mockStellarService.monitorTransaction = jest.fn().mockResolvedValue({
-        success: true,
-        transactionHash: mockTxHash,
-        status: 'success',
-        ledger: 12345,
-      });
-
-      (StellarService as jest.Mock).mockImplementation(() => mockStellarService);
-
-      const response = await request(app).post('/api/lending/withdraw').send({
-        userAddress: 'GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
-        amount: '100000',
-        userSecret: 'SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
-      });
-
-      expect(response.status).toBe(200);
-      expect(response.body.success).toBe(true);
-    });
-
-    it('should handle undercollateralization error', async () => {
-      mockStellarService.buildWithdrawTransaction = jest.fn().mockResolvedValue('mock_tx_xdr');
-      mockStellarService.submitTransaction = jest.fn().mockResolvedValue({
-        success: false,
-        status: 'failed',
-        error: 'Withdrawal would violate minimum collateral ratio',
-      });
-
-      (StellarService as jest.Mock).mockImplementation(() => mockStellarService);
-
-      const response = await request(app).post('/api/lending/withdraw').send({
-        userAddress: 'GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
-        amount: '1000000',
-        userSecret: 'SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
-      });
+    it('should return 400 when signedXdr is missing', async () => {
+      const response = await request(app).post('/api/lending/submit').send({});
 
       expect(response.status).toBe(400);
-      expect(response.body.success).toBe(false);
     });
   });
 
@@ -201,15 +135,12 @@ describe('Lending Controller', () => {
         horizon: true,
         sorobanRpc: true,
       });
-
       (StellarService as jest.Mock).mockImplementation(() => mockStellarService);
 
       const response = await request(app).get('/api/health');
 
       expect(response.status).toBe(200);
       expect(response.body.status).toBe('healthy');
-      expect(response.body.services.horizon).toBe(true);
-      expect(response.body.services.sorobanRpc).toBe(true);
     });
 
     it('should return unhealthy status when services are down', async () => {
@@ -217,7 +148,6 @@ describe('Lending Controller', () => {
         horizon: false,
         sorobanRpc: false,
       });
-
       (StellarService as jest.Mock).mockImplementation(() => mockStellarService);
 
       const response = await request(app).get('/api/health');

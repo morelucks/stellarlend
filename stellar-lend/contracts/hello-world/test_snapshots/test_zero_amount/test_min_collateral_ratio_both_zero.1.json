@@ -1,7 +1,8 @@
 {
   "generators": {
     "address": 2,
-    "nonce": 0
+    "nonce": 0,
+    "mux_id": 0
   },
   "auth": [
     [],
@@ -9,7 +10,7 @@
     []
   ],
   "ledger": {
-    "protocol_version": 22,
+    "protocol_version": 23,
     "sequence_number": 0,
     "timestamp": 0,
     "network_id": "0000000000000000000000000000000000000000000000000000000000000000",
@@ -103,6 +104,118 @@
             "key": {
               "vec": [
                 {
+                  "symbol": "InterestRateConfig"
+                }
+              ]
+            },
+            "durability": "persistent"
+          }
+        },
+        [
+          {
+            "last_modified_ledger_seq": 0,
+            "data": {
+              "contract_data": {
+                "ext": "v0",
+                "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
+                "key": {
+                  "vec": [
+                    {
+                      "symbol": "InterestRateConfig"
+                    }
+                  ]
+                },
+                "durability": "persistent",
+                "val": {
+                  "map": [
+                    {
+                      "key": {
+                        "symbol": "base_rate_bps"
+                      },
+                      "val": {
+                        "i128": "100"
+                      }
+                    },
+                    {
+                      "key": {
+                        "symbol": "emergency_adjustment_bps"
+                      },
+                      "val": {
+                        "i128": "0"
+                      }
+                    },
+                    {
+                      "key": {
+                        "symbol": "jump_multiplier_bps"
+                      },
+                      "val": {
+                        "i128": "10000"
+                      }
+                    },
+                    {
+                      "key": {
+                        "symbol": "kink_utilization_bps"
+                      },
+                      "val": {
+                        "i128": "8000"
+                      }
+                    },
+                    {
+                      "key": {
+                        "symbol": "last_update"
+                      },
+                      "val": {
+                        "u64": "0"
+                      }
+                    },
+                    {
+                      "key": {
+                        "symbol": "multiplier_bps"
+                      },
+                      "val": {
+                        "i128": "2000"
+                      }
+                    },
+                    {
+                      "key": {
+                        "symbol": "rate_ceiling_bps"
+                      },
+                      "val": {
+                        "i128": "10000"
+                      }
+                    },
+                    {
+                      "key": {
+                        "symbol": "rate_floor_bps"
+                      },
+                      "val": {
+                        "i128": "50"
+                      }
+                    },
+                    {
+                      "key": {
+                        "symbol": "spread_bps"
+                      },
+                      "val": {
+                        "i128": "200"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "ext": "v0"
+          },
+          4095
+        ]
+      ],
+      [
+        {
+          "contract_data": {
+            "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
+            "key": {
+              "vec": [
+                {
                   "symbol": "RiskConfig"
                 }
               ]
@@ -129,54 +242,10 @@
                   "map": [
                     {
                       "key": {
-                        "symbol": "close_factor"
-                      },
-                      "val": {
-                        "i128": {
-                          "hi": 0,
-                          "lo": 5000
-                        }
-                      }
-                    },
-                    {
-                      "key": {
                         "symbol": "last_update"
                       },
                       "val": {
-                        "u64": 0
-                      }
-                    },
-                    {
-                      "key": {
-                        "symbol": "liquidation_incentive"
-                      },
-                      "val": {
-                        "i128": {
-                          "hi": 0,
-                          "lo": 1000
-                        }
-                      }
-                    },
-                    {
-                      "key": {
-                        "symbol": "liquidation_threshold"
-                      },
-                      "val": {
-                        "i128": {
-                          "hi": 0,
-                          "lo": 10500
-                        }
-                      }
-                    },
-                    {
-                      "key": {
-                        "symbol": "min_collateral_ratio"
-                      },
-                      "val": {
-                        "i128": {
-                          "hi": 0,
-                          "lo": 11000
-                        }
+                        "u64": "0"
                       }
                     },
                     {
@@ -226,6 +295,86 @@
                             }
                           }
                         ]
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "ext": "v0"
+          },
+          4095
+        ]
+      ],
+      [
+        {
+          "contract_data": {
+            "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
+            "key": {
+              "vec": [
+                {
+                  "symbol": "RiskParamsConfig"
+                }
+              ]
+            },
+            "durability": "persistent"
+          }
+        },
+        [
+          {
+            "last_modified_ledger_seq": 0,
+            "data": {
+              "contract_data": {
+                "ext": "v0",
+                "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
+                "key": {
+                  "vec": [
+                    {
+                      "symbol": "RiskParamsConfig"
+                    }
+                  ]
+                },
+                "durability": "persistent",
+                "val": {
+                  "map": [
+                    {
+                      "key": {
+                        "symbol": "close_factor"
+                      },
+                      "val": {
+                        "i128": "5000"
+                      }
+                    },
+                    {
+                      "key": {
+                        "symbol": "last_update"
+                      },
+                      "val": {
+                        "u64": "0"
+                      }
+                    },
+                    {
+                      "key": {
+                        "symbol": "liquidation_incentive"
+                      },
+                      "val": {
+                        "i128": "1000"
+                      }
+                    },
+                    {
+                      "key": {
+                        "symbol": "liquidation_threshold"
+                      },
+                      "val": {
+                        "i128": "10500"
+                      }
+                    },
+                    {
+                      "key": {
+                        "symbol": "min_collateral_ratio"
+                      },
+                      "val": {
+                        "i128": "11000"
                       }
                     }
                   ]

@@ -65,6 +65,8 @@ pub enum LiquidationError {
     PriceNotAvailable = 10,
     /// Liquidation would leave position undercollateralized
     InsufficientLiquidation = 11,
+    /// Reentrancy detected
+    Reentrancy = 12,
 }
 
 /// Annual interest rate in basis points (e.g., 500 = 5% per year)
@@ -210,6 +212,9 @@ pub fn liquidate(
     if debt_amount <= 0 {
         return Err(LiquidationError::InvalidAmount);
     }
+
+    // Check for reentrancy
+    let _guard = crate::reentrancy::ReentrancyGuard::new(env).map_err(|_| LiquidationError::Reentrancy)?;
 
     // Check emergency pause
     if is_emergency_paused(env) {

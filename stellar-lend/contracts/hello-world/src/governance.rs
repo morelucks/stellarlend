@@ -1,22 +1,22 @@
 #![allow(unused_variables)]
 
-use soroban_sdk::{token::TokenClient, Address, Env, String, Vec};
+use soroban_sdk::{token::TokenClient, Address, Env, String, Symbol, Vec};
 
-use crate::errors::GovernanceError;
-use crate::storage::{GovernanceDataKey, GuardianConfig};
+pub use crate::errors::GovernanceError;
+pub use crate::storage::{GovernanceDataKey, GuardianConfig};
+
+pub use crate::types::{
+    GovernanceConfig, MultisigConfig, Proposal, ProposalOutcome, ProposalStatus, ProposalType,
+    RecoveryRequest, VoteInfo, VoteType, BASIS_POINTS_SCALE, DEFAULT_EXECUTION_DELAY,
+    DEFAULT_QUORUM_BPS, DEFAULT_RECOVERY_PERIOD, DEFAULT_TIMELOCK_DURATION, DEFAULT_VOTING_PERIOD,
+    DEFAULT_VOTING_THRESHOLD,
+};
 
 use crate::events::{
     GovernanceInitializedEvent, GuardianAddedEvent, GuardianRemovedEvent, ProposalApprovedEvent,
     ProposalCancelledEvent, ProposalCreatedEvent, ProposalExecutedEvent, ProposalFailedEvent,
     ProposalQueuedEvent, RecoveryApprovedEvent, RecoveryExecutedEvent, RecoveryStartedEvent,
     VoteCastEvent,
-};
-
-use crate::types::{
-    GovernanceConfig, MultisigConfig, Proposal, ProposalOutcome, ProposalStatus, ProposalType,
-    RecoveryRequest, VoteInfo, VoteType, BASIS_POINTS_SCALE, DEFAULT_EXECUTION_DELAY,
-    DEFAULT_QUORUM_BPS, DEFAULT_RECOVERY_PERIOD, DEFAULT_TIMELOCK_DURATION, DEFAULT_VOTING_PERIOD,
-    DEFAULT_VOTING_THRESHOLD,
 };
 
 // ========================================================================
@@ -96,6 +96,7 @@ pub fn initialize(
 
     Ok(())
 }
+
 
 // ========================================================================
 // Proposal Creation
@@ -586,7 +587,7 @@ fn emit_vote_cast_event(
     env: &Env,
     proposal_id: &u64,
     voter: &Address,
-    vote: &Vote,
+    vote: &VoteType,
     voting_power: &i128,
 ) {
     let topics = (Symbol::new(env, "vote_cast"), *proposal_id, voter.clone());

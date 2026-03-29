@@ -1,22 +1,28 @@
 import {
-  Keypair,
-  Networks,
   TransactionBuilder,
-  Operation,
-  Asset,
-  Account,
-  BASE_FEE,
   Contract,
   xdr,
   Address,
   nativeToScVal,
+  Account,
+  BASE_FEE,
 } from '@stellar/stellar-sdk';
 import { Server as SorobanServer } from '@stellar/stellar-sdk/rpc';
 import axios from 'axios';
 import { config } from '../config';
 import logger from '../utils/logger';
 import { InternalServerError } from '../utils/errors';
-import { TransactionResponse, TransactionStatus } from '../types';
+import { TransactionResponse, LendingOperation } from '../types';
+
+const CONTRACT_METHODS: Record<LendingOperation, string> = {
+  deposit: 'deposit_collateral',
+  borrow: 'borrow_asset',
+  repay: 'repay_debt',
+  withdraw: 'withdraw_collateral',
+};
+
+// Timeout generous enough for client-side signing (5 minutes)
+const TX_TIMEOUT_SECONDS = 300;
 
 export class StellarService {
   private horizonUrl: string;
@@ -43,12 +49,41 @@ export class StellarService {
     }
   }
 
+  async buildUnsignedTransaction(
+    operation: LendingOperation,
+    userAddress: string,
+    assetAddress: string | undefined,
+    amount: string
+  ): Promise<string> {
+    try {
+      const account = await this.getAccount(userAddress);
+      const contract = new Contract(this.contractId);
+
+      const params = [
+        new Address(userAddress).toScVal(),
+        assetAddress ? new Address(assetAddress).toScVal() : xdr.ScVal.scvVoid(),
+        nativeToScVal(BigInt(amount), { type: 'i128' }),
+      ];
+
+      const tx = new TransactionBuilder(account, {
+        fee: BASE_FEE,
+        networkPassphrase: this.networkPassphrase,
+      })
+        .addOperation(contract.call(CONTRACT_METHODS[operation], ...params))
+        .setTimeout(TX_TIMEOUT_SECONDS)
+        .build();
+
+      const preparedTx = await this.sorobanServer.prepareTransaction(tx);
+      return preparedTx.toXDR();
+    } catch (error) {
+      logger.error(`Failed to build unsigned ${operation} transaction:`, error);
+      throw new InternalServerError(`Failed to build ${operation} transaction`);
+    }
+  }
+
   async submitTransaction(txXdr: string): Promise<TransactionResponse> {
     try {
-      const response = await axios.post(`${this.horizonUrl}/transactions`, {
-        tx: txXdr,
-      });
-
+      const response = await axios.post(`${this.horizonUrl}/transactions`, { tx: txXdr });
       return {
         success: true,
         transactionHash: response.data.hash,
@@ -65,158 +100,6 @@ export class StellarService {
     }
   }
 
-  async buildDepositTransaction(
-    userAddress: string,
-    assetAddress: string | undefined,
-    amount: string,
-    userSecret: string
-  ): Promise<string> {
-    try {
-      const sourceKeypair = Keypair.fromSecret(userSecret);
-      const account = await this.getAccount(userAddress);
-
-      const contract = new Contract(this.contractId);
-
-      const params = [
-        new Address(userAddress).toScVal(),
-        assetAddress ? new Address(assetAddress).toScVal() : xdr.ScVal.scvVoid(),
-        nativeToScVal(BigInt(amount), { type: 'i128' }),
-      ];
-
-      const operation = contract.call('deposit_collateral', ...params);
-
-      const transaction = new TransactionBuilder(account, {
-        fee: BASE_FEE,
-        networkPassphrase: this.networkPassphrase,
-      })
-        .addOperation(operation)
-        .setTimeout(30)
-        .build();
-
-      const preparedTx = await this.sorobanServer.prepareTransaction(transaction);
-      preparedTx.sign(sourceKeypair);
-
-      return preparedTx.toXDR();
-    } catch (error) {
-      logger.error('Failed to build deposit transaction:', error);
-      throw new InternalServerError('Failed to build deposit transaction');
-    }
-  }
-
-  async buildBorrowTransaction(
-    userAddress: string,
-    assetAddress: string | undefined,
-    amount: string,
-    userSecret: string
-  ): Promise<string> {
-    try {
-      const sourceKeypair = Keypair.fromSecret(userSecret);
-      const account = await this.getAccount(userAddress);
-
-      const contract = new Contract(this.contractId);
-
-      const params = [
-        new Address(userAddress).toScVal(),
-        assetAddress ? new Address(assetAddress).toScVal() : xdr.ScVal.scvVoid(),
-        nativeToScVal(BigInt(amount), { type: 'i128' }),
-      ];
-
-      const operation = contract.call('borrow_asset', ...params);
-
-      const transaction = new TransactionBuilder(account, {
-        fee: BASE_FEE,
-        networkPassphrase: this.networkPassphrase,
-      })
-        .addOperation(operation)
-        .setTimeout(30)
-        .build();
-
-      const preparedTx = await this.sorobanServer.prepareTransaction(transaction);
-      preparedTx.sign(sourceKeypair);
-
-      return preparedTx.toXDR();
-    } catch (error) {
-      logger.error('Failed to build borrow transaction:', error);
-      throw new InternalServerError('Failed to build borrow transaction');
-    }
-  }
-
-  async buildRepayTransaction(
-    userAddress: string,
-    assetAddress: string | undefined,
-    amount: string,
-    userSecret: string
-  ): Promise<string> {
-    try {
-      const sourceKeypair = Keypair.fromSecret(userSecret);
-      const account = await this.getAccount(userAddress);
-
-      const contract = new Contract(this.contractId);
-
-      const params = [
-        new Address(userAddress).toScVal(),
-        assetAddress ? new Address(assetAddress).toScVal() : xdr.ScVal.scvVoid(),
-        nativeToScVal(BigInt(amount), { type: 'i128' }),
-      ];
-
-      const operation = contract.call('repay_debt', ...params);
-
-      const transaction = new TransactionBuilder(account, {
-        fee: BASE_FEE,
-        networkPassphrase: this.networkPassphrase,
-      })
-        .addOperation(operation)
-        .setTimeout(30)
-        .build();
-
-      const preparedTx = await this.sorobanServer.prepareTransaction(transaction);
-      preparedTx.sign(sourceKeypair);
-
-      return preparedTx.toXDR();
-    } catch (error) {
-      logger.error('Failed to build repay transaction:', error);
-      throw new InternalServerError('Failed to build repay transaction');
-    }
-  }
-
-  async buildWithdrawTransaction(
-    userAddress: string,
-    assetAddress: string | undefined,
-    amount: string,
-    userSecret: string
-  ): Promise<string> {
-    try {
-      const sourceKeypair = Keypair.fromSecret(userSecret);
-      const account = await this.getAccount(userAddress);
-
-      const contract = new Contract(this.contractId);
-
-      const params = [
-        new Address(userAddress).toScVal(),
-        assetAddress ? new Address(assetAddress).toScVal() : xdr.ScVal.scvVoid(),
-        nativeToScVal(BigInt(amount), { type: 'i128' }),
-      ];
-
-      const operation = contract.call('withdraw_collateral', ...params);
-
-      const transaction = new TransactionBuilder(account, {
-        fee: BASE_FEE,
-        networkPassphrase: this.networkPassphrase,
-      })
-        .addOperation(operation)
-        .setTimeout(30)
-        .build();
-
-      const preparedTx = await this.sorobanServer.prepareTransaction(transaction);
-      preparedTx.sign(sourceKeypair);
-
-      return preparedTx.toXDR();
-    } catch (error) {
-      logger.error('Failed to build withdraw transaction:', error);
-      throw new InternalServerError('Failed to build withdraw transaction');
-    }
-  }
-
   async monitorTransaction(txHash: string, timeoutMs = 30000): Promise<TransactionResponse> {
     const startTime = Date.now();
     const pollInterval = 1000;
@@ -224,7 +107,6 @@ export class StellarService {
     while (Date.now() - startTime < timeoutMs) {
       try {
         const response = await axios.get(`${this.horizonUrl}/transactions/${txHash}`);
-
         if (response.data.successful) {
           return {
             success: true,
@@ -232,20 +114,18 @@ export class StellarService {
             status: 'success',
             ledger: response.data.ledger,
           };
-        } else {
-          return {
-            success: false,
-            transactionHash: txHash,
-            status: 'failed',
-            error: 'Transaction failed',
-          };
         }
+        return {
+          success: false,
+          transactionHash: txHash,
+          status: 'failed',
+          error: 'Transaction failed',
+        };
       } catch (error: any) {
         if (error.response?.status === 404) {
           await new Promise((resolve) => setTimeout(resolve, pollInterval));
           continue;
         }
-
         logger.error('Error monitoring transaction:', error);
         throw new InternalServerError('Failed to monitor transaction');
       }
@@ -260,10 +140,7 @@ export class StellarService {
   }
 
   async healthCheck(): Promise<{ horizon: boolean; sorobanRpc: boolean }> {
-    const results = {
-      horizon: false,
-      sorobanRpc: false,
-    };
+    const results = { horizon: false, sorobanRpc: false };
 
     try {
       await axios.get(`${this.horizonUrl}/`);

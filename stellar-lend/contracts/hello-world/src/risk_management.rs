@@ -127,7 +127,7 @@ pub fn initialize_risk_management(env: &Env, admin: Address) -> Result<(), RiskM
     }
 
     // Set admin
-    env.storage().persistent().set(&admin_key, &admin);
+    env.storage().persistent().set(&RiskDataKey::Admin, &admin);
 
     // Initialize default risk config for pause switches
     let default_config = RiskConfig {

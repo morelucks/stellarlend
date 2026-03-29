@@ -1,7 +1,8 @@
 {
   "generators": {
     "address": 2,
-    "nonce": 0
+    "nonce": 0,
+    "mux_id": 0
   },
   "auth": [
     [],
@@ -11,7 +12,7 @@
     []
   ],
   "ledger": {
-    "protocol_version": 22,
+    "protocol_version": 23,
     "sequence_number": 0,
     "timestamp": 0,
     "network_id": "0000000000000000000000000000000000000000000000000000000000000000",
@@ -62,10 +63,7 @@
                         "symbol": "borrow_interest"
                       },
                       "val": {
-                        "i128": {
-                          "hi": 0,
-                          "lo": 100
-                        }
+                        "i128": "100"
                       }
                     },
                     {
@@ -73,10 +71,7 @@
                         "symbol": "collateral"
                       },
                       "val": {
-                        "i128": {
-                          "hi": 0,
-                          "lo": 10000
-                        }
+                        "i128": "10000"
                       }
                     },
                     {
@@ -84,10 +79,7 @@
                         "symbol": "debt"
                       },
                       "val": {
-                        "i128": {
-                          "hi": 0,
-                          "lo": 3000
-                        }
+                        "i128": "3000"
                       }
                     },
                     {
@@ -95,7 +87,7 @@
                         "symbol": "last_accrual_time"
                       },
                       "val": {
-                        "u64": 0
+                        "u64": "0"
                       }
                     }
                   ]

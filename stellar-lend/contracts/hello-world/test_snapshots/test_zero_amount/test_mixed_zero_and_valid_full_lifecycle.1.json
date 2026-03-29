@@ -1,11 +1,10 @@
 {
   "generators": {
     "address": 2,
-    "nonce": 0
+    "nonce": 0,
+    "mux_id": 0
   },
   "auth": [
-    [],
-    [],
     [],
     [],
     [],
@@ -16,7 +15,7 @@
     []
   ],
   "ledger": {
-    "protocol_version": 22,
+    "protocol_version": 23,
     "sequence_number": 0,
     "timestamp": 0,
     "network_id": "0000000000000000000000000000000000000000000000000000000000000000",
@@ -71,10 +70,7 @@
                             "symbol": "amount"
                           },
                           "val": {
-                            "i128": {
-                              "hi": 0,
-                              "lo": 1000
-                            }
+                            "i128": "1000"
                           }
                         },
                         {
@@ -96,7 +92,7 @@
                             "symbol": "timestamp"
                           },
                           "val": {
-                            "u64": 0
+                            "u64": "0"
                           }
                         },
                         {
@@ -124,10 +120,7 @@
                             "symbol": "amount"
                           },
                           "val": {
-                            "i128": {
-                              "hi": 0,
-                              "lo": 300
-                            }
+                            "i128": "300"
                           }
                         },
                         {
@@ -149,113 +142,7 @@
                             "symbol": "timestamp"
                           },
                           "val": {
-                            "u64": 0
-                          }
-                        },
-                        {
-                          "key": {
-                            "symbol": "user"
-                          },
-                          "val": {
-                            "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4"
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "map": [
-                        {
-                          "key": {
-                            "symbol": "activity_type"
-                          },
-                          "val": {
-                            "symbol": "repay"
-                          }
-                        },
-                        {
-                          "key": {
-                            "symbol": "amount"
-                          },
-                          "val": {
-                            "i128": {
-                              "hi": 0,
-                              "lo": 300
-                            }
-                          }
-                        },
-                        {
-                          "key": {
-                            "symbol": "asset"
-                          },
-                          "val": "void"
-                        },
-                        {
-                          "key": {
-                            "symbol": "metadata"
-                          },
-                          "val": {
-                            "map": []
-                          }
-                        },
-                        {
-                          "key": {
-                            "symbol": "timestamp"
-                          },
-                          "val": {
-                            "u64": 0
-                          }
-                        },
-                        {
-                          "key": {
-                            "symbol": "user"
-                          },
-                          "val": {
-                            "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4"
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "map": [
-                        {
-                          "key": {
-                            "symbol": "activity_type"
-                          },
-                          "val": {
-                            "symbol": "withdraw"
-                          }
-                        },
-                        {
-                          "key": {
-                            "symbol": "amount"
-                          },
-                          "val": {
-                            "i128": {
-                              "hi": 0,
-                              "lo": 500
-                            }
-                          }
-                        },
-                        {
-                          "key": {
-                            "symbol": "asset"
-                          },
-                          "val": "void"
-                        },
-                        {
-                          "key": {
-                            "symbol": "metadata"
-                          },
-                          "val": {
-                            "map": []
-                          }
-                        },
-                        {
-                          "key": {
-                            "symbol": "timestamp"
-                          },
-                          "val": {
-                            "u64": 0
+                            "u64": "0"
                           }
                         },
                         {
@@ -313,10 +200,7 @@
                 },
                 "durability": "persistent",
                 "val": {
-                  "i128": {
-                    "hi": 0,
-                    "lo": 500
-                  }
+                  "i128": "1000"
                 }
               }
             },
@@ -367,10 +251,7 @@
                         "symbol": "borrow_interest"
                       },
                       "val": {
-                        "i128": {
-                          "hi": 0,
-                          "lo": 0
-                        }
+                        "i128": "0"
                       }
                     },
                     {
@@ -378,10 +259,7 @@
                         "symbol": "collateral"
                       },
                       "val": {
-                        "i128": {
-                          "hi": 0,
-                          "lo": 500
-                        }
+                        "i128": "1000"
                       }
                     },
                     {
@@ -389,10 +267,7 @@
                         "symbol": "debt"
                       },
                       "val": {
-                        "i128": {
-                          "hi": 0,
-                          "lo": 0
-                        }
+                        "i128": "300"
                       }
                     },
                     {
@@ -400,7 +275,7 @@
                         "symbol": "last_accrual_time"
                       },
                       "val": {
-                        "u64": 0
+                        "u64": "0"
                       }
                     }
                   ]
@@ -448,10 +323,7 @@
                         "symbol": "total_borrows"
                       },
                       "val": {
-                        "i128": {
-                          "hi": 0,
-                          "lo": 300
-                        }
+                        "i128": "300"
                       }
                     },
                     {
@@ -459,10 +331,7 @@
                         "symbol": "total_deposits"
                       },
                       "val": {
-                        "i128": {
-                          "hi": 0,
-                          "lo": 1000
-                        }
+                        "i128": "1000"
                       }
                     },
                     {
@@ -470,10 +339,7 @@
                         "symbol": "total_value_locked"
                       },
                       "val": {
-                        "i128": {
-                          "hi": 0,
-                          "lo": 500
-                        }
+                        "i128": "1000"
                       }
                     }
                   ]
@@ -527,10 +393,7 @@
                         "symbol": "activity_score"
                       },
                       "val": {
-                        "i128": {
-                          "hi": 0,
-                          "lo": 0
-                        }
+                        "i128": "0"
                       }
                     },
                     {
@@ -538,10 +401,7 @@
                         "symbol": "collateral_value"
                       },
                       "val": {
-                        "i128": {
-                          "hi": 0,
-                          "lo": 500
-                        }
+                        "i128": "1000"
                       }
                     },
                     {
@@ -549,10 +409,7 @@
                         "symbol": "collateralization_ratio"
                       },
                       "val": {
-                        "i128": {
-                          "hi": 0,
-                          "lo": 0
-                        }
+                        "i128": "33333"
                       }
                     },
                     {
@@ -560,10 +417,7 @@
                         "symbol": "debt_value"
                       },
                       "val": {
-                        "i128": {
-                          "hi": 0,
-                          "lo": 0
-                        }
+                        "i128": "300"
                       }
                     },
                     {
@@ -571,7 +425,7 @@
                         "symbol": "first_interaction"
                       },
                       "val": {
-                        "u64": 0
+                        "u64": "0"
                       }
                     },
                     {
@@ -579,7 +433,7 @@
                         "symbol": "last_activity"
                       },
                       "val": {
-                        "u64": 0
+                        "u64": "0"
                       }
                     },
                     {
@@ -595,10 +449,7 @@
                         "symbol": "risk_level"
                       },
                       "val": {
-                        "i128": {
-                          "hi": 0,
-                          "lo": 0
-                        }
+                        "i128": "0"
                       }
                     },
                     {
@@ -606,10 +457,7 @@
                         "symbol": "total_borrows"
                       },
                       "val": {
-                        "i128": {
-                          "hi": 0,
-                          "lo": 300
-                        }
+                        "i128": "300"
                       }
                     },
                     {
@@ -617,10 +465,7 @@
                         "symbol": "total_deposits"
                       },
                       "val": {
-                        "i128": {
-                          "hi": 0,
-                          "lo": 1000
-                        }
+                        "i128": "1000"
                       }
                     },
                     {
@@ -628,10 +473,7 @@
                         "symbol": "total_repayments"
                       },
                       "val": {
-                        "i128": {
-                          "hi": 0,
-                          "lo": 300
-                        }
+                        "i128": "0"
                       }
                     },
                     {
@@ -639,10 +481,7 @@
                         "symbol": "total_withdrawals"
                       },
                       "val": {
-                        "i128": {
-                          "hi": 0,
-                          "lo": 500
-                        }
+                        "i128": "0"
                       }
                     },
                     {
@@ -650,7 +489,7 @@
                         "symbol": "transaction_count"
                       },
                       "val": {
-                        "u64": 4
+                        "u64": "2"
                       }
                     }
                   ]
